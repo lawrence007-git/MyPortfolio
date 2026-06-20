@@ -86,10 +86,13 @@ export function Hero() {
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <Link href={site.resumeUrl}>
+                <a 
+                  href="/cv.pdf"
+                  download="Bautista_Lawrence_C_Resume.pdf"
+                >
                 <DownloadIcon />
                 Resume
-              </Link>
+              </a>
             </Button>
             <div className="ml-1 flex items-center gap-1">
               {social.map(({ label, href, icon: Icon }) => (
