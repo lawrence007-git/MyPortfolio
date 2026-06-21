@@ -5,7 +5,7 @@
 
 import {
   Code2, Palette, Server, Database, Wrench, Sparkles,
-  GitBranch, Link, Send, Mail, type LucideIcon,
+  GitBranch, Link, Send, User2Icon, type LucideIcon,
 } from "lucide-react";
 
 export const site = {
@@ -20,7 +20,7 @@ export const site = {
 export const social: { label: string; href: string; icon: LucideIcon }[] = [
   { label: "GitHub", href: "https://github.com/lawrence007-git", icon: GitBranch },
   { label: "LinkedIn", href: "https://www.linkedin.com/in/lawrence-bautista-b3a64a383/", icon: Link },
-  { label: "Email", href: "lawrence.bautista007@gmail.com", icon: Mail },
+  { label: "Facebook", href: "https://www.facebook.com/Bautista.Lawrence08", icon: User2Icon },
 ];
 
 export const stats = [
