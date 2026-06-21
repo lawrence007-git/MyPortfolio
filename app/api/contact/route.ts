@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 
-// Don't create transporter at module level
-// Create it fresh on each request
-
 export async function OPTIONS() {
   return new NextResponse(null, {
     status: 200,
@@ -17,17 +14,12 @@ export async function OPTIONS() {
 
 export async function POST(request: NextRequest) {
   try {
-    // Create transporter fresh on each request
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-    });
-
-    console.log("EMAIL_USER:", process.env.EMAIL_USER);
-    console.log("EMAIL_PASSWORD exists:", !!process.env.EMAIL_PASSWORD);
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
+      return NextResponse.json(
+        { error: 'Server configuration error' },
+        { status: 500 }
+      );
+    }
 
     const body = await request.json();
     const { name, email, subject, message } = body;
@@ -39,13 +31,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    await transporter.sendMail({
+    // Try port 465 with secure: true (for mobile networks)
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465, // Changed from 587 to 465
+      secure: true, // Changed from false to true
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+      connectionTimeout: 15000,
+      socketTimeout: 15000,
+    });
+
+    const info = await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: process.env.EMAIL_USER,
       replyTo: email,
       subject: `Contact Form: ${subject}`,
-      html: `<p><strong>From:</strong> ${name}</p><p><strong>Email:</strong> ${email}</p><p>${message}</p>`,
+      html: `
+        <h2>New Contact Form Submission</h2>
+        <p><strong>From:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Message:</strong></p>
+        <p>${message}</p>
+      `,
     });
+
+    console.log('Email sent:', info.messageId);
 
     return NextResponse.json({ message: 'Email sent successfully' });
   } catch (error) {
