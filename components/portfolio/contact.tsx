@@ -9,6 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { site, social } from "@/lib/portfolio-data";
 import { SectionHeading } from "./section-heading";
+import { ToastNotification } from "@/components/toast-notifaction";
+import { useState } from "react";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 30 },
@@ -20,19 +22,51 @@ const fadeInUp = {
 };
 
 export function Contact() {
-  // No API — submit composes a mailto so this works on any static host.
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
+
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsLoading(true);
+
     const form = e.currentTarget;
     const data = new FormData(form);
-    const name = String(data.get("name") ?? "");
-    const email = String(data.get("email") ?? "");
-    const subject = String(data.get("subject") ?? "");
-    const message = String(data.get("message") ?? "");
-    const body = `From: ${name} <${email}>\n\n${message}`;
-    window.location.href = `mailto:${site.email}?subject=${encodeURIComponent(
-      subject,
-    )}&body=${encodeURIComponent(body)}`;
+
+    const payload = {
+      name: String(data.get("name") ?? ""),
+      email: String(data.get("email") ?? ""),
+      subject: String(data.get("subject") ?? ""),
+      message: String(data.get("message") ?? ""),
+    };
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to send message");
+      }
+
+      setToast({
+        message: "✅ Message sent! I'll get back to you soon.",
+        type: "success",
+      });
+      form.reset();
+    } catch (error) {
+      setToast({
+        message: "❌ Something went wrong. Please try again.",
+        type: "error",
+      });
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -58,7 +92,9 @@ export function Contact() {
                   <MailIcon className="h-5 w-5" />
                 </span>
                 <div className="min-w-0">
-                  <p className="text-xs uppercase tracking-wide text-muted-foreground">Email</p>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                    Email
+                  </p>
                   <Link
                     href={`mailto:${site.email}`}
                     className="block truncate font-medium hover:text-primary"
@@ -75,14 +111,18 @@ export function Contact() {
                   <MapPinIcon className="h-5 w-5" />
                 </span>
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-muted-foreground">Location</p>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                    Location
+                  </p>
                   <p className="font-medium">{site.location}</p>
                 </div>
               </div>
             </div>
 
             <div className="rounded-xl border border-border bg-card p-6">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Find me on</p>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                Find me on
+              </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {social.map(({ label, href, icon: Icon }) => (
                   <Button key={label} asChild variant="outline" size="sm">
@@ -108,16 +148,32 @@ export function Contact() {
             <div className="grid gap-5 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="name">Name</Label>
-                <Input id="name" name="name" required placeholder="Ada Lovelace" />
+                <Input
+                  id="name"
+                  name="name"
+                  required
+                  placeholder="Ada Lovelace"
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" name="email" type="email" required placeholder="you@domain.com" />
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  placeholder="you@domain.com"
+                />
               </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="subject">Subject</Label>
-              <Input id="subject" name="subject" required placeholder="Project inquiry" />
+              <Input
+                id="subject"
+                name="subject"
+                required
+                placeholder="Project inquiry"
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="message">Message</Label>
@@ -129,13 +185,27 @@ export function Contact() {
                 placeholder="Tell me a bit about what you're building..."
               />
             </div>
-            <Button type="submit" size="lg" className="w-full group">
-              Send message
+            <Button
+              type="submit"
+              size="lg"
+              disabled={isLoading}
+              className="w-full group"
+            >
+              {isLoading ? "Sending..." : "Send message"}
               <SendIcon className="transition-transform group-hover:translate-x-0.5" />
             </Button>
           </motion.form>
         </div>
       </div>
+
+      {/* Toast Notification */}
+      {toast && (
+        <ToastNotification
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </section>
   );
 }
