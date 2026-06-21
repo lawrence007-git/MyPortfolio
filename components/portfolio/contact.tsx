@@ -55,10 +55,17 @@ export function Contact() {
 
     clearTimeout(timeoutId);
 
-    const result = await response.json();
+    // Try to parse response
+    let result;
+    try {
+      result = await response.json();
+    } catch {
+      result = { error: `Server error: ${response.status}` };
+    }
 
     if (!response.ok) {
-      throw new Error(result.details || result.error || "Failed to send message");
+      const errorMsg = result.details || result.error || `Error: ${response.status}`;
+      throw new Error(errorMsg);
     }
 
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -69,10 +76,12 @@ export function Contact() {
     });
     form.reset();
   } catch (error) {
-    let errorMessage = "❌ Something went wrong. Please try again.";
+    let errorMessage = "❌ Something went wrong.";
     
     if (error instanceof Error) {
-      errorMessage = `❌ ${error.message}`; // Show actual error
+      errorMessage = `❌ ${error.message}`;
+    } else if (typeof error === "string") {
+      errorMessage = `❌ ${error}`;
     }
     
     setToast({
