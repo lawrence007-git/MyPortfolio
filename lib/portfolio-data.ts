@@ -18,9 +18,9 @@ export const site = {
 };
 
 export const social: { label: string; href: string; icon: LucideIcon }[] = [
-  { label: "GitHub", href: "https://github.com/yourhandle", icon: GitBranch },
-  { label: "LinkedIn", href: "https://linkedin.com/in/yourhandle", icon: Link },
-  { label: "Email", href: "mailto:lawrence.bautista007@gmail.com", icon: Mail },
+  { label: "GitHub", href: "https://github.com/lawrence007-git", icon: GitBranch },
+  { label: "LinkedIn", href: "https://www.linkedin.com/in/lawrence-bautista-b3a64a383/", icon: Link },
+  { label: "Email", href: "lawrence.bautista007@gmail.com", icon: Mail },
 ];
 
 export const stats = [
