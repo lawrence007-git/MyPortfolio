@@ -11,7 +11,6 @@ import { site, social } from "@/lib/portfolio-data";
 import { SectionHeading } from "./section-heading";
 import { ToastNotification } from "@/components/toast-notifaction";
 import { useState } from "react";
-import { NextRequest, NextResponse } from 'next/server';
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 30 },
@@ -60,15 +59,14 @@ export function Contact() {
       });
       form.reset();
     } catch (error) {
-  console.error('Email error:', error);
-  return NextResponse.json(
-    { 
-      error: 'Failed to send email',
-      details: String(error) // This will show the real error
-    },
-    { status: 500 }
-  );
-}
+      setToast({
+        message: "❌ Something went wrong. Please try again.",
+        type: "error",
+      });
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
