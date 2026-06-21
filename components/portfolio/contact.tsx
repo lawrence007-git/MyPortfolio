@@ -29,45 +29,62 @@ export function Contact() {
   } | null>(null);
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsLoading(true);
+  e.preventDefault();
+  setIsLoading(true);
 
-    const form = e.currentTarget;
-    const data = new FormData(form);
+  const form = e.currentTarget;
+  const data = new FormData(form);
 
-    const payload = {
-      name: String(data.get("name") ?? ""),
-      email: String(data.get("email") ?? ""),
-      subject: String(data.get("subject") ?? ""),
-      message: String(data.get("message") ?? ""),
-    };
+  const payload = {
+    name: String(data.get("name") ?? ""),
+    email: String(data.get("email") ?? ""),
+    subject: String(data.get("subject") ?? ""),
+    message: String(data.get("message") ?? ""),
+  };
 
-    try {
-      const response = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+  try {
+    const response = await fetch("/api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
 
-      if (!response.ok) {
-        throw new Error("Failed to send message");
-      }
+    const result = await response.json();
 
+    // Check for rate limit error (429)
+    if (response.status === 429) {
       setToast({
-        message: "✅ Message sent! I'll get back to you soon.",
-        type: "success",
-      });
-      form.reset();
-    } catch (error) {
-      setToast({
-        message: "❌ Something went wrong. Please try again.",
+        message: `⏱️ Too many requests. Please wait ${result.retryAfter} seconds before trying again.`,
         type: "error",
       });
-      console.error(error);
-    } finally {
-      setIsLoading(false);
+      return;
     }
-  };
+
+    // Check for other errors
+    if (!response.ok) {
+      setToast({
+        message: result.error || "❌ Something went wrong. Please try again.",
+        type: "error",
+      });
+      return;
+    }
+
+    // Success
+    setToast({
+      message: "✅ Message sent! I'll get back to you soon.",
+      type: "success",
+    });
+    form.reset();
+  } catch (error) {
+    setToast({
+      message: "❌ Something went wrong. Please try again.",
+      type: "error",
+    });
+    console.error(error);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <section id="contact" className="relative py-24 sm:py-32">
