@@ -29,69 +29,45 @@ export function Contact() {
   } | null>(null);
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
-  setIsLoading(true);
-  
-  const form = e.currentTarget;
-  const data = new FormData(form);
+    e.preventDefault();
+    setIsLoading(true);
 
-  const payload = {
-    name: String(data.get("name") ?? ""),
-    email: String(data.get("email") ?? ""),
-    subject: String(data.get("subject") ?? ""),
-    message: String(data.get("message") ?? ""),
-  };
+    const form = e.currentTarget;
+    const data = new FormData(form);
 
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    const payload = {
+      name: String(data.get("name") ?? ""),
+      email: String(data.get("email") ?? ""),
+      subject: String(data.get("subject") ?? ""),
+      message: String(data.get("message") ?? ""),
+    };
 
-    const response = await fetch("/api/contact", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
-
-    // Try to parse response
-    let result;
     try {
-      result = await response.json();
-    } catch {
-      result = { error: `Server error: ${response.status}` };
-    }
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-    if (!response.ok) {
-      const errorMsg = result.details || result.error || `Error: ${response.status}`;
-      throw new Error(errorMsg);
-    }
+      if (!response.ok) {
+        throw new Error("Failed to send message");
+      }
 
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    setToast({
-      message: "✅ Message sent! I'll get back to you soon.",
-      type: "success",
-    });
-    form.reset();
-  } catch (error) {
-    let errorMessage = "❌ Something went wrong.";
-    
-    if (error instanceof Error) {
-      errorMessage = `❌ ${error.message}`;
-    } else if (typeof error === "string") {
-      errorMessage = `❌ ${error}`;
+      setToast({
+        message: "✅ Message sent! I'll get back to you soon.",
+        type: "success",
+      });
+      form.reset();
+    } catch (error) {
+      setToast({
+        message: "❌ Something went wrong. Please try again.",
+        type: "error",
+      });
+      console.error(error);
+    } finally {
+      setIsLoading(false);
     }
-    
-    setToast({
-      message: errorMessage,
-      type: "error",
-    });
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   return (
     <section id="contact" className="relative py-24 sm:py-32">

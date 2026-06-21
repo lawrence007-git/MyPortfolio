@@ -1,31 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD, // Use App Password, not your regular password
-  },
-});
+// Don't create transporter at module level
+// Create it fresh on each request
+
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  });
+}
 
 export async function POST(request: NextRequest) {
   try {
+    // Create transporter fresh on each request
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+    });
+
+    console.log("EMAIL_USER:", process.env.EMAIL_USER);
+    console.log("EMAIL_PASSWORD exists:", !!process.env.EMAIL_PASSWORD);
+
     const body = await request.json();
     const { name, email, subject, message } = body;
 
     if (!name || !email || !subject || !message) {
       return NextResponse.json(
-        { 
-          error: 'Missing required fields',
-          details: `name: ${!!name}, email: ${!!email}, subject: ${!!subject}, message: ${!!message}`
-        },
+        { error: 'Missing required fields' },
         { status: 400 }
       );
     }
-
-    console.log('EMAIL_USER:', process.env.EMAIL_USER); // Debug
-    console.log('EMAIL_PASSWORD exists:', !!process.env.EMAIL_PASSWORD); // Debug
 
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
