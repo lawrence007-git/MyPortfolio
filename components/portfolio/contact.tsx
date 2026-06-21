@@ -29,45 +29,60 @@ export function Contact() {
   } | null>(null);
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsLoading(true);
+  e.preventDefault();
+  setIsLoading(true);
+  
+  const form = e.currentTarget;
+  const data = new FormData(form);
 
-    const form = e.currentTarget;
-    const data = new FormData(form);
-
-    const payload = {
-      name: String(data.get("name") ?? ""),
-      email: String(data.get("email") ?? ""),
-      subject: String(data.get("subject") ?? ""),
-      message: String(data.get("message") ?? ""),
-    };
-
-    try {
-      const response = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to send message");
-      }
-
-      setToast({
-        message: "✅ Message sent! I'll get back to you soon.",
-        type: "success",
-      });
-      form.reset();
-    } catch (error) {
-      setToast({
-        message: "❌ Something went wrong. Please try again.",
-        type: "error",
-      });
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
+  const payload = {
+    name: String(data.get("name") ?? ""),
+    email: String(data.get("email") ?? ""),
+    subject: String(data.get("subject") ?? ""),
+    message: String(data.get("message") ?? ""),
   };
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+    const response = await fetch("/api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.details || result.error || "Failed to send message");
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    setToast({
+      message: "✅ Message sent! I'll get back to you soon.",
+      type: "success",
+    });
+    form.reset();
+  } catch (error) {
+    let errorMessage = "❌ Something went wrong. Please try again.";
+    
+    if (error instanceof Error) {
+      errorMessage = `❌ ${error.message}`; // Show actual error
+    }
+    
+    setToast({
+      message: errorMessage,
+      type: "error",
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <section id="contact" className="relative py-24 sm:py-32">
