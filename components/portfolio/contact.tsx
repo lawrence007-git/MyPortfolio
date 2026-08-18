@@ -90,7 +90,7 @@ export function Contact() {
     <section id="contact" className="relative py-24 sm:py-32">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <SectionHeading
-          eyebrow="04 — Contact"
+          eyebrow="05 — Contact"
           title="Let's build something"
           description="Have a project in mind or just want to say hi? Drop me a line."
         />

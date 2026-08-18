@@ -19,7 +19,7 @@ export function Skills() {
     <section id="skills" className="relative bg-muted/30 py-24 sm:py-32">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <SectionHeading
-          eyebrow="03 — Toolkit"
+          eyebrow="04 — Toolkit"
           title="Skills & tools"
           description="The technologies I reach for when shipping production interfaces."
         />

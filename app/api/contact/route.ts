@@ -40,7 +40,7 @@ function checkRateLimit(ip: string): { allowed: boolean; retryAfter?: number } {
 export async function OPTIONS() {
   return new NextResponse(null, {
     status: 200,
-    headers: {
+    headers: { 
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',

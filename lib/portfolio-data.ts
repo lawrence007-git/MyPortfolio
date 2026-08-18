@@ -59,6 +59,25 @@ export const experience: Experience[] = [
   },
 ];
 
+export type Project = {
+  name: string;
+  description: string;
+  stack: string[];
+  githubUrl: string;
+  liveUrl?: string;
+};
+ 
+export const projects: Project[] = [
+  {
+    name: "CareTech",
+    description:
+      "A business systems platform for teams that have outgrown spreadsheets and manual tracking — internal tools, integrations, and operational dashboards built for real workflows.",
+    stack: ["Next.js", "TypeScript", "Convex", "Tailwind CSS", "ShadCN UI"],
+    githubUrl: "https://github.com/lawrence007-git/CareTech",
+    liveUrl: "https://care-tech-zeta.vercel.app",
+  },
+];
+
 export type SkillGroup = {
   title: string;
   icon: LucideIcon;
